@@ -17,3 +17,13 @@ variable "instance_types" {
   description = "Node Instances"
   type        = list(string)
 }
+
+variable "eks_cluster_name" {
+  description  = "Cluster Name"
+  type         = string
+}
+
+variable "eks_cluster_vpc" {
+  description  = "Cluster VPC Name"
+  type         = string
+}
