@@ -1,0 +1,16 @@
+adminUser: admin
+adminPassword: prom-operator
+
+service:
+  type: LoadBalancer
+  port: 80
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+    - name: Prometheus
+      type: prometheus
+      access: proxy
+      url: http://prometheus-server
+      isDefault: true

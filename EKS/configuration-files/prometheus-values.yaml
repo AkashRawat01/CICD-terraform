@@ -1,0 +1,11 @@
+alertmanager:
+  enabled: true
+
+server:
+  global:
+    scrape_interval: 15s
+  rule_files:
+    - /etc/prometheus/rules/prometheus.rules
+  service:
+    type: LoadBalancer
+    nodePort: 30090

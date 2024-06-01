@@ -1,0 +1,15 @@
+falco:
+  rulesFile: /etc/falco/falco_rules.local.yaml
+  jsonOutput: true
+
+auditLog:
+  enabled: true
+  k8sAuditConfig:
+    auditOutput: stdout
+    logFile: /var/log/kubernetes/kubernetes-audit.log
+  # Enable the use of the Kubernetes Audit Rules
+  auditRules:
+    enabled: true
+
+ebpf:
+  enabled: true
