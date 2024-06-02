@@ -61,3 +61,13 @@ output "eks_cluster_name" {
 output "eks_cluster_id_output" {
   value = module.eks.cluster_id
 }
+
+data "aws_eks_cluster" "cluster" {
+  name = var.eks_cluster_name
+  depends_on = [module.eks] 
+}
+
+data "aws_eks_cluster_auth" "cluster_auth" {
+  name = var.eks_cluster_name
+  depends_on = [module.eks]
+}
