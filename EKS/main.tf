@@ -51,6 +51,11 @@ module "eks" {
     Environment = "dev"
     Terraform   = "true"
   }
+# Ensure node groups are deleted before the cluster
+  depends_on = [
+    module.vpc
+  ]
+
 }
 
 ##printing EKS Cluster Name
