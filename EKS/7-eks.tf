@@ -22,6 +22,12 @@ resource "aws_iam_role_policy_attachment" "eks" {
   role       = aws_iam_role.eks.name
 }
 
+#Attcahing ECR policy
+resource "aws_iam_role_policy_attachment" "eks_ecr" {
+  policy_arn = "arn:aws:iam::aws:policy/EC2InstanceProfileForImageBuilderECRContainerBuilds"
+  role       = aws_iam_role.eks.name
+}
+
 resource "aws_eks_cluster" "eks" {
   name     = "${local.env}-${local.eks_name}"
   version  = local.eks_version
@@ -42,5 +48,5 @@ resource "aws_eks_cluster" "eks" {
     bootstrap_cluster_creator_admin_permissions = true
   }
 
-  depends_on = [aws_iam_role_policy_attachment.eks, aws_iam_role_policy_attachment.eks_admin_akash]
+  depends_on = [aws_iam_role_policy_attachment.eks, aws_iam_role_policy_attachment.eks_admin_akash, aws_iam_role_policy_attachment.eks_ecr]
 }

@@ -33,6 +33,12 @@ resource "aws_iam_role_policy_attachment" "amazon_ec2_container_registry_read_on
   role       = aws_iam_role.nodes.name
 }
 
+resource "aws_iam_role_policy_attachment" "amazon_ecr_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/EC2InstanceProfileForImageBuilderECRContainerBuilds"
+  role       = aws_iam_role.nodes.name
+}
+
+
 resource "aws_eks_node_group" "general" {
   cluster_name    = aws_eks_cluster.eks.name
   version         = local.eks_version
@@ -65,6 +71,7 @@ resource "aws_eks_node_group" "general" {
     aws_iam_role_policy_attachment.amazon_eks_worker_node_policy,
     aws_iam_role_policy_attachment.amazon_eks_cni_policy,
     aws_iam_role_policy_attachment.amazon_ec2_container_registry_read_only,
+    aws_iam_role_policy_attachment.amazon_ecr_policy,
   ]
 
   # Allow external changes without Terraform plan difference
