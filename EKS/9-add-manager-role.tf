@@ -20,7 +20,7 @@ POLICY
 }
 
 resource "aws_iam_policy" "eks_admin" {
-  name = "AmazonEKSAdminPolicy"
+  name = "AmazonEKSProdAdminPolicy"
 
   policy = <<POLICY
 {
