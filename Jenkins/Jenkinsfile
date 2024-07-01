@@ -1,0 +1,113 @@
+pipeline{
+    agent{
+        node{
+            label 'Build-server'
+        }
+    }
+    environment {
+        AWS_ACCESS_KEY_ID = credentials('Akash_Access_ID')
+        AWS_SECRET_ACCESS_KEY = credentials('Akash_Secret_Access_ID')
+        AWS_DEFAULT_REGION = 'us-east-1'
+        Dev_Cluster_Name   = 'Staging-dev-eks'
+    }
+    stages{
+        stage('Checkout SCM'){
+            steps{
+                script{
+                    sh 'rm -rf EKS*'
+                    checkout scmGit(branches: [[name: '*/dev']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/AkashRawat01/CICD-terraform.git']]) //Generate  using pipeline syntax
+                }
+            }
+        }
+        stage('Initializing Terraform'){
+            steps{
+                script{
+                    dir('EKS'){
+                         sh 'terraform init'
+                    }
+                }
+            }
+        }
+        stage('Formating terraform code'){
+            steps{
+                script{
+                    dir('EKS'){
+                         sh 'terraform fmt'
+                    }
+                }
+            }
+        }
+        stage('Validating Terraform'){
+            steps{
+                script{
+                    dir('EKS'){
+                         sh 'terraform validate'
+                    }
+                }
+            }
+        }
+        stage('Previewing the infrastructure'){
+            steps{
+                script{
+                    dir('EKS'){
+                         sh 'terraform plan'
+                    }
+                }
+            }
+        }
+        stage('Creating an EKS cluster'){
+            when{
+                environment name:'CREATE EKS CLUSTER',value: 'true'
+            }
+            steps{
+                script{
+                    dir('EKS'){
+                         sh 'terraform apply --auto-approve'
+                    }
+                }
+            }
+        }
+        stage('Destroying an EKS cluster'){
+            when{
+                environment name:'DESTROY EKS CLUSTER',value: 'true'
+            }
+            steps{
+                script{
+                    dir('EKS'){
+                         sh '''
+                         #aws kms delete-alias --alias-name alias/eks/dev_eks_cluster
+                         #aws logs delete-log-group --log-group-name /aws/eks/dev_eks_cluster/cluster
+                         #terraform destroy -target=module.eks.aws_eks_node_group.this --auto-approve
+                         #terraform destroy -target=module.eks.aws_eks_cluster.this --auto-approve
+                         terraform destroy --auto-approve
+                         '''
+                         // aws logs delete-log-group --log-group-name /aws/eks/dev_eks_cluster/cluster
+                    }
+                }
+            }
+        }
+        stage('Deploy Monitoring and Auditing on EKS cluster'){
+            when{
+                environment name:'Deploy Monitoring and Auditing Helm',value: 'true'
+            }
+            steps{
+                withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'K8S', namespace: '', restrictKubeConfigAccess: false, serverUrl: '') {
+                    script{
+                        dir('EKS/configuration-files'){
+                            sh '''
+                            aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name $Dev_Cluster_Name --profile Akash-user
+                            helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+                            helm repo add grafana https://grafana.github.io/helm-charts
+                            helm repo add falcosecurity https://falcosecurity.github.io/charts
+                            helm repo update
+                            helm install prometheus prometheus-community/prometheus -f prometheus-values.yaml
+                            helm install grafana grafana/grafana -f grafana-values.yaml
+                            helm install falco falcosecurity/falco -f falco-values.yaml
+                            '''
+                        }
+                    }    
+                }
+            }
+        }
+    }
+}
