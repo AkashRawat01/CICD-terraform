@@ -1,9 +1,9 @@
-resource "aws_iam_user" "developer" {
-  name = "developer"
+resource "aws_iam_user" "prod-developer" {
+  name = "prod-developer"
 }
 
 resource "aws_iam_policy" "developer_eks" {
-  name = "AmazonEKSDeveloperPolicy"
+  name = "AmazonEKSProdDeveloperPolicy"
 
   policy = <<POLICY
 {
@@ -23,12 +23,12 @@ POLICY
 }
 
 resource "aws_iam_user_policy_attachment" "developer_eks" {
-  user       = aws_iam_user.developer.name
+  user       = aws_iam_user.prod-developer.name
   policy_arn = aws_iam_policy.developer_eks.arn
 }
 
-resource "aws_eks_access_entry" "developer" {
+resource "aws_eks_access_entry" "prod-developer" {
   cluster_name      = aws_eks_cluster.eks.name
-  principal_arn     = aws_iam_user.developer.arn
+  principal_arn     = aws_iam_user.prod-developer.arn
   kubernetes_groups = ["my-viewer"]
 }

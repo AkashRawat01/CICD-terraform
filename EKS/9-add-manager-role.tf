@@ -59,12 +59,12 @@ resource "aws_iam_role_policy_attachment" "eks_admin" {
 #  policy_arn = aws_iam_policy.eks_admin.arn
 #}
 
-resource "aws_iam_user" "manager" {
-  name = "manager"
+resource "aws_iam_user" "prod-manager" {
+  name = "prod-manager"
 }
 
 resource "aws_iam_policy" "eks_assume_admin" {
-  name = "AmazonEKSAssumeAdminPolicy"
+  name = "AmazonEKSProdAssumeAdminPolicy"
 
   policy = <<POLICY
 {
@@ -82,13 +82,13 @@ resource "aws_iam_policy" "eks_assume_admin" {
 POLICY
 }
 
-resource "aws_iam_user_policy_attachment" "manager" {
-  user       = aws_iam_user.manager.name
+resource "aws_iam_user_policy_attachment" "prod-manager" {
+  user       = aws_iam_user.prod-manager.name
   policy_arn = aws_iam_policy.eks_assume_admin.arn
 }
 
 # Best practice: use IAM roles due to temporary credentials
-resource "aws_eks_access_entry" "manager" {
+resource "aws_eks_access_entry" "prod-manager" {
   cluster_name      = aws_eks_cluster.eks.name
   principal_arn     = aws_iam_role.eks_admin.arn
   kubernetes_groups = ["my-admin"]
